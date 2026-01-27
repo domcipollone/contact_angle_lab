@@ -81,7 +81,12 @@
             <h3>Quick guide</h3>
             <ol>
               <li>Load a droplet image.</li>
-              <li>Set the baseline with two clicks.</li>
+              <li>
+                Set the baseline with two clicks along the solid surface. These
+                two base points define the substrate plane and separate the
+                droplet (above) from the solid (below), which sets the reference
+                line for all angles.
+              </li>
               <li>
                 Add boundary points (10+ recommended) for circle/ellipse fits.
               </li>
@@ -92,8 +97,11 @@
               <li>Choose analysis mode and compute.</li>
             </ol>
             <div class="note">
-              Manual mode uses the helper points to define a local tangent at each
-              contact point. Circle/ellipse modes fit all boundary points.
+              The baseline is the contact line reference: it defines where the
+              droplet meets the solid and fixes the left/right intersection
+              points for best-fit methods. Manual mode uses the helper points to
+              define a local tangent at each contact point. Circle/ellipse modes
+              fit all boundary points.
             </div>
           </div>
         </section>

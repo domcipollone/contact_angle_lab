@@ -20,7 +20,8 @@ const state = {
 };
 
 const hints = {
-  baseline: "Select two points along the surface to define the baseline.",
+  baseline:
+    "Select two points along the solid surface. These base points define the substrate plane and separate the droplet from the solid.",
   boundary:
     "Click along the droplet boundary to add points for best-fit modes.",
   manual:
