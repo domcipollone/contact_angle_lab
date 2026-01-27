@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Angle Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="hero">
+        <div>
+          <h1>Contact Angle Lab</h1>
+          <p class="subtitle">
+            Measure contact angles from images using manual points, circle fit,
+            ellipse fit, or both.
+          </p>
+        </div>
+        <div class="badge">Web App</div>
+      </header>
+
+      <main class="layout">
+        <section class="panel">
+          <h2>Workspace</h2>
+          <div class="toolbar">
+            <label class="file">
+              <input id="imageInput" type="file" accept="image/*" />
+              Load image
+            </label>
+            <button id="resetView">Reset view</button>
+            <button id="clearPoints">Clear points</button>
+          </div>
+
+          <div class="tool-row">
+            <div class="tool-group">
+              <h3>Click Mode</h3>
+              <div class="tool-buttons">
+                <button data-tool="baseline" class="tool active">Baseline</button>
+                <button data-tool="boundary" class="tool">Boundary points</button>
+                <button data-tool="manual" class="tool">Manual points</button>
+              </div>
+              <p class="hint" id="toolHint">
+                Select two points along the surface to define the baseline.
+              </p>
+            </div>
+            <div class="tool-group">
+              <h3>Analysis</h3>
+              <div class="tool-buttons">
+                <button data-mode="manual" class="mode active">Manual</button>
+                <button data-mode="circle" class="mode">Circle fit</button>
+                <button data-mode="ellipse" class="mode">Ellipse fit</button>
+                <button data-mode="both" class="mode">Both fits</button>
+              </div>
+              <button id="analyze" class="primary">Compute contact angle</button>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas id="canvas" width="960" height="640"></canvas>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Results</h2>
+          <div class="results">
+            <div class="metric">
+              <span class="label">Left angle</span>
+              <span id="leftAngle" class="value">--</span>
+            </div>
+            <div class="metric">
+              <span class="label">Right angle</span>
+              <span id="rightAngle" class="value">--</span>
+            </div>
+            <div class="metric">
+              <span class="label">Method</span>
+              <span id="method" class="value">--</span>
+            </div>
+          </div>
+
+          <div class="instructions">
+            <h3>Quick guide</h3>
+            <ol>
+              <li>Load a droplet image.</li>
+              <li>Set the baseline with two clicks.</li>
+              <li>
+                Add boundary points (10+ recommended) for circle/ellipse fits.
+              </li>
+              <li>
+                For manual mode, click four points in order: left contact, right
+                contact, left tangent helper, right tangent helper.
+              </li>
+              <li>Choose analysis mode and compute.</li>
+            </ol>
+            <div class="note">
+              Manual mode uses the helper points to define a local tangent at each
+              contact point. Circle/ellipse modes fit all boundary points.
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
