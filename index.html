@@ -50,6 +50,7 @@
                 <button data-mode="circle" class="mode">Circle fit</button>
                 <button data-mode="ellipse" class="mode">Ellipse fit</button>
                 <button data-mode="both" class="mode">Both fits</button>
+                <button data-mode="pendant" class="mode">Pendant drop</button>
               </div>
               <button id="analyze" class="primary">Compute contact angle</button>
             </div>
@@ -64,17 +65,35 @@
           <h2>Results</h2>
           <div class="results">
             <div class="metric">
-              <span class="label">Left angle</span>
+              <span id="label1" class="label">Left angle</span>
               <span id="leftAngle" class="value">--</span>
             </div>
             <div class="metric">
-              <span class="label">Right angle</span>
+              <span id="label2" class="label">Right angle</span>
               <span id="rightAngle" class="value">--</span>
             </div>
             <div class="metric">
-              <span class="label">Method</span>
+              <span id="label3" class="label">Method</span>
               <span id="method" class="value">--</span>
             </div>
+          </div>
+
+          <div class="pendant-settings">
+            <h3>Pendant settings</h3>
+            <div class="input-row">
+              <label>
+                Density difference Δρ (kg/m³)
+                <input id="densityDiff" type="number" value="1000" step="10" />
+              </label>
+              <label>
+                Scale (mm per px)
+                <input id="scaleMmPerPx" type="number" value="0.010" step="0.001" />
+              </label>
+            </div>
+            <p class="note">
+              Used only for pendant drop mode. Surface tension γ is computed from
+              the fitted capillary constant: γ = Δρ·g / b.
+            </p>
           </div>
 
           <div class="instructions">

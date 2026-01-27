@@ -7,6 +7,11 @@ const toolHint = document.getElementById("toolHint");
 const leftAngleEl = document.getElementById("leftAngle");
 const rightAngleEl = document.getElementById("rightAngle");
 const methodEl = document.getElementById("method");
+const label1 = document.getElementById("label1");
+const label2 = document.getElementById("label2");
+const label3 = document.getElementById("label3");
+const densityInput = document.getElementById("densityDiff");
+const scaleInput = document.getElementById("scaleMmPerPx");
 
 const state = {
   image: null,
@@ -26,6 +31,8 @@ const hints = {
     "Click along the droplet boundary to add points for best-fit modes.",
   manual:
     "Click four points: left contact, right contact, left tangent helper, right tangent helper.",
+  pendant:
+    "Click along the full pendant profile boundary; baseline is not used.",
 };
 
 function setTool(tool) {
@@ -41,6 +48,10 @@ function setMode(mode) {
   modeButtons.forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
+  if (mode === "pendant") {
+    setTool("boundary");
+  }
+  updateLabels();
 }
 
 toolButtons.forEach((btn) => {
@@ -97,19 +108,31 @@ canvas.addEventListener("click", (event) => {
 
 document.getElementById("analyze").addEventListener("click", () => {
   const baseline = state.baseline;
-  if (baseline.length < 2) {
-    alert("Please set a baseline with two points.");
-    return;
-  }
 
   let result = null;
   if (state.mode === "manual") {
+    if (baseline.length < 2) {
+      alert("Please set a baseline with two points.");
+      return;
+    }
     result = manualAngles();
   } else if (state.mode === "circle") {
+    if (baseline.length < 2) {
+      alert("Please set a baseline with two points.");
+      return;
+    }
     result = circleAngles();
   } else if (state.mode === "ellipse") {
+    if (baseline.length < 2) {
+      alert("Please set a baseline with two points.");
+      return;
+    }
     result = ellipseAngles();
   } else if (state.mode === "both") {
+    if (baseline.length < 2) {
+      alert("Please set a baseline with two points.");
+      return;
+    }
     const circleResult = circleAngles();
     const ellipseResult = ellipseAngles();
     if (circleResult && ellipseResult) {
@@ -117,13 +140,21 @@ document.getElementById("analyze").addEventListener("click", () => {
         left: (circleResult.left + ellipseResult.left) / 2,
         right: (circleResult.right + ellipseResult.right) / 2,
         label: "Both (avg)",
+        format: "angle",
       };
     }
+  } else if (state.mode === "pendant") {
+    result = pendantAnalysis();
   }
 
   if (!result) return;
-  leftAngleEl.textContent = `${result.left.toFixed(1)}°`;
-  rightAngleEl.textContent = `${result.right.toFixed(1)}°`;
+  if (result.format === "pendant") {
+    leftAngleEl.textContent = formatValue(result.left, result.leftUnit);
+    rightAngleEl.textContent = formatValue(result.right, result.rightUnit);
+  } else {
+    leftAngleEl.textContent = formatValue(result.left, "deg");
+    rightAngleEl.textContent = formatValue(result.right, "deg");
+  }
   methodEl.textContent = result.label;
 });
 
@@ -158,7 +189,10 @@ function draw() {
   drawPoints(state.boundaryPoints, "#55b3f3");
   drawPoints(state.manualPoints, "#f05d5e");
 
-  if (state.boundaryPoints.length > 2 && state.mode !== "manual") {
+  if (
+    state.boundaryPoints.length > 2 &&
+    (state.mode === "circle" || state.mode === "ellipse" || state.mode === "both")
+  ) {
     const circle = fitCircle(state.boundaryPoints);
     if (circle) drawCircle(circle, "rgba(255, 166, 64, 0.6)");
     const ellipse = fitEllipse(state.boundaryPoints);
@@ -221,6 +255,7 @@ function manualAngles() {
     left: ccwAngle(baselineVec, leftVec),
     right: ccwAngle(baselineVec, rightVec),
     label: "Manual",
+    format: "angle",
   };
 }
 
@@ -246,6 +281,7 @@ function circleAngles() {
     left: ccwAngle(baselineVec, leftTangent),
     right: ccwAngle(baselineVec, rightTangent),
     label: "Circle fit",
+    format: "angle",
   };
 }
 
@@ -270,6 +306,7 @@ function ellipseAngles() {
     left: ccwAngle(baselineVec, leftTangent),
     right: ccwAngle(baselineVec, rightTangent),
     label: "Ellipse fit",
+    format: "angle",
   };
 }
 
@@ -616,5 +653,201 @@ function identity3() {
     [0, 0, 1],
   ];
 }
+
+function updateLabels() {
+  if (state.mode === "pendant") {
+    label1.textContent = "Surface tension";
+    label2.textContent = "Apex radius";
+    label3.textContent = "Method";
+  } else {
+    label1.textContent = "Left angle";
+    label2.textContent = "Right angle";
+    label3.textContent = "Method";
+  }
+}
+
+function formatValue(value, unit) {
+  if (!isFinite(value)) return "--";
+  if (unit === "deg") return `${value.toFixed(1)} deg`;
+  if (unit === "mN/m") return `${value.toFixed(2)} mN/m`;
+  if (unit === "mm") return `${value.toFixed(3)} mm`;
+  if (unit === "px") return `${value.toFixed(1)} px`;
+  return `${value.toFixed(2)} ${unit}`;
+}
+
+function pendantAnalysis() {
+  if (state.boundaryPoints.length < 12) {
+    alert("Pendant mode needs 12+ boundary points along the full profile.");
+    return null;
+  }
+  const boundary = normalizePendantPoints(state.boundaryPoints);
+  if (!boundary || boundary.points.length < 6) {
+    alert("Could not infer pendant axis/apex. Add more boundary points.");
+    return null;
+  }
+
+  const fit = fitPendantProfile(boundary.points);
+  if (!fit) {
+    alert("Pendant fit failed. Try adding more points or a clearer profile.");
+    return null;
+  }
+
+  const deltaRho = Number(densityInput.value) || 0;
+  const mmPerPx = Number(scaleInput.value) || 0;
+  const g = 9.80665;
+  let gamma = null;
+  let apexRadius = fit.R0;
+  let apexUnit = "px";
+
+  if (mmPerPx > 0 && deltaRho > 0) {
+    const mPerPx = mmPerPx / 1000;
+    const pxPerM = 1 / mPerPx;
+    const b_m = fit.b * (pxPerM * pxPerM);
+    gamma = (deltaRho * g) / b_m;
+    apexRadius = fit.R0 * mmPerPx;
+    apexUnit = "mm";
+  }
+
+  if (gamma !== null) {
+    return {
+      left: gamma * 1000,
+      right: apexRadius,
+      label: "Pendant fit",
+      format: "pendant",
+      leftUnit: "mN/m",
+      rightUnit: apexUnit,
+    };
+  }
+
+  return {
+    left: fit.b,
+    right: fit.R0,
+    label: "Pendant fit (px units)",
+    format: "pendant",
+    leftUnit: "1/px^2",
+    rightUnit: "px",
+  };
+}
+
+function normalizePendantPoints(points) {
+  const xs = points.map((p) => p.x);
+  const xCenter = (Math.min(...xs) + Math.max(...xs)) / 2;
+  let apex = points[0];
+  points.forEach((p) => {
+    if (p.y < apex.y) apex = p;
+  });
+  const apexY = apex.y;
+  const normalized = points
+    .map((p) => ({
+      r: Math.abs(p.x - xCenter),
+      z: p.y - apexY,
+    }))
+    .filter((p) => p.z >= 0);
+  normalized.sort((a, b) => a.z - b.z);
+  return { points: normalized, xCenter, apexY };
+}
+
+function fitPendantProfile(points) {
+  const maxR = Math.max(...points.map((p) => p.r));
+  const maxZ = Math.max(...points.map((p) => p.z));
+  if (!isFinite(maxR) || maxR <= 0 || !isFinite(maxZ)) return null;
+
+  const R0Min = Math.max(2, 0.2 * maxR);
+  const R0Max = Math.max(R0Min + 5, 5 * maxR);
+  const bBase = 1 / (maxR * maxR);
+  const bMin = 0.02 * bBase;
+  const bMax = 8 * bBase;
+
+  const grid = 8;
+  let best = null;
+  for (let i = 0; i < grid; i += 1) {
+    const tR = i / (grid - 1);
+    const R0 = R0Min + tR * (R0Max - R0Min);
+    for (let j = 0; j < grid; j += 1) {
+      const tb = j / (grid - 1);
+      const b = bMin * Math.pow(bMax / bMin, tb);
+      const error = pendantError(points, R0, b, maxZ);
+      if (!best || error < best.error) {
+        best = { R0, b, error };
+      }
+    }
+  }
+  if (!best) return null;
+
+  let current = best;
+  for (let i = 0; i < 12; i += 1) {
+    const candidates = [
+      { R0: current.R0 * 0.85, b: current.b },
+      { R0: current.R0 * 1.15, b: current.b },
+      { R0: current.R0, b: current.b * 0.85 },
+      { R0: current.R0, b: current.b * 1.15 },
+      { R0: current.R0 * 0.93, b: current.b * 1.08 },
+      { R0: current.R0 * 1.08, b: current.b * 0.93 },
+    ];
+    candidates.forEach((cand) => {
+      const error = pendantError(points, cand.R0, cand.b, maxZ);
+      if (error < current.error) {
+        current = { ...cand, error };
+      }
+    });
+  }
+  return current;
+}
+
+function pendantError(points, R0, b, maxZ) {
+  const profile = simulatePendantProfile(R0, b, maxZ);
+  if (!profile || profile.length < 3) return Infinity;
+  let error = 0;
+  points.forEach((p) => {
+    const rSim = interpolateR(profile, p.z);
+    if (rSim === null) {
+      error += 25;
+    } else {
+      const diff = rSim - p.r;
+      error += diff * diff;
+    }
+  });
+  return error / points.length;
+}
+
+function simulatePendantProfile(R0, b, maxZ) {
+  const step = Math.max(0.5, R0 / 60);
+  const maxSteps = 8000;
+  let r = 1e-6;
+  let z = 0;
+  let phi = step / R0;
+  const profile = [{ z, r }];
+
+  for (let i = 0; i < maxSteps; i += 1) {
+    const dr = Math.cos(phi) * step;
+    const dz = Math.sin(phi) * step;
+    const dphi = (2 / R0 - b * z - Math.sin(phi) / Math.max(r, 1e-6)) * step;
+
+    r += dr;
+    z += dz;
+    phi += dphi;
+
+    if (!isFinite(r) || !isFinite(z) || r < 0) break;
+    profile.push({ z, r });
+    if (z > maxZ * 1.1) break;
+    if (phi > Math.PI * 0.95) break;
+  }
+  return profile;
+}
+
+function interpolateR(profile, z) {
+  if (z < profile[0].z || z > profile[profile.length - 1].z) return null;
+  for (let i = 1; i < profile.length; i += 1) {
+    const z1 = profile[i - 1].z;
+    const z2 = profile[i].z;
+    if (z >= z1 && z <= z2) {
+      const t = (z - z1) / (z2 - z1 || 1);
+      return profile[i - 1].r + t * (profile[i].r - profile[i - 1].r);
+    }
+  }
+  return null;
+}
+
+updateLabels();
 
 draw();
