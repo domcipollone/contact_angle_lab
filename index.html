@@ -63,7 +63,7 @@
 
         <section class="panel">
           <div class="panel-header">
-            <h2>Results</h2>
+            <h2>Run setup</h2>
             <div class="tab-bar" role="tablist" aria-label="Analysis type">
               <button class="tab active" data-tab="sessile" role="tab">
                 Sessile drop
@@ -73,18 +73,26 @@
               </button>
             </div>
           </div>
-          <div class="results">
-            <div class="metric">
-              <span id="label1" class="label">Left angle</span>
-              <span id="leftAngle" class="value">--</span>
+
+          <div class="run-metadata">
+            <h3>Run metadata</h3>
+            <div class="input-row">
+              <label>
+                Experiment name
+                <input id="experimentName" type="text" placeholder="Sample A / Run 01" />
+              </label>
+              <label data-meta="sessile">
+                Substrate
+                <input id="substrateName" type="text" placeholder="Glass, PTFE, SiO2..." />
+              </label>
+              <label data-meta="pendant">
+                Fluid
+                <input id="fluidName" type="text" placeholder="Water, IPA, Oil..." />
+              </label>
             </div>
-            <div class="metric">
-              <span id="label2" class="label">Right angle</span>
-              <span id="rightAngle" class="value">--</span>
-            </div>
-            <div class="metric">
-              <span id="label3" class="label">Method</span>
-              <span id="method" class="value">--</span>
+            <div class="log-actions">
+              <button id="downloadCsv">Download CSV</button>
+              <button id="clearLog">Clear log</button>
             </div>
           </div>
 
@@ -171,6 +179,24 @@
               R0; surface tension is γ = Δρ·g / b.
               Symbols: Δρ density difference, g gravitational acceleration,
               b capillary constant, R0 apex radius, γ surface tension.
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Results</h2>
+          <div class="results">
+            <div class="metric">
+              <span id="label1" class="label">Left angle</span>
+              <span id="leftAngle" class="value">--</span>
+            </div>
+            <div class="metric">
+              <span id="label2" class="label">Right angle</span>
+              <span id="rightAngle" class="value">--</span>
+            </div>
+            <div class="metric">
+              <span id="label3" class="label">Method</span>
+              <span id="method" class="value">--</span>
             </div>
           </div>
         </section>
