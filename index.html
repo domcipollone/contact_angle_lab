@@ -10,10 +10,10 @@
     <div class="app">
       <header class="hero">
         <div>
-          <h1>Contact Angle Lab</h1>
+          <h1>Surface Lab</h1>
           <p class="subtitle">
-            Measure contact angles from images using manual points, circle fit,
-            ellipse fit, or both.
+            Surface science tools for contact angle and surface tension analysis
+            from images.
           </p>
         </div>
         <div class="badge">Web App</div>
@@ -50,8 +50,9 @@
                 <button data-mode="circle" class="mode">Circle fit</button>
                 <button data-mode="ellipse" class="mode">Ellipse fit</button>
                 <button data-mode="both" class="mode">Both fits</button>
+                <button data-mode="pendant" class="mode">Pendant drop</button>
               </div>
-              <button id="analyze" class="primary">Compute contact angle</button>
+              <button id="analyze" class="primary analyze">Compute contact angle</button>
             </div>
           </div>
 
@@ -61,27 +62,76 @@
         </section>
 
         <section class="panel">
-          <h2>Results</h2>
+          <div class="panel-header">
+            <h2>Results</h2>
+            <div class="tab-bar" role="tablist" aria-label="Analysis type">
+              <button class="tab active" data-tab="sessile" role="tab">
+                Sessile drop
+              </button>
+              <button class="tab" data-tab="pendant" role="tab">
+                Pendant drop
+              </button>
+            </div>
+          </div>
           <div class="results">
             <div class="metric">
-              <span class="label">Left angle</span>
+              <span id="label1" class="label">Left angle</span>
               <span id="leftAngle" class="value">--</span>
             </div>
             <div class="metric">
-              <span class="label">Right angle</span>
+              <span id="label2" class="label">Right angle</span>
               <span id="rightAngle" class="value">--</span>
             </div>
             <div class="metric">
-              <span class="label">Method</span>
+              <span id="label3" class="label">Method</span>
               <span id="method" class="value">--</span>
             </div>
           </div>
 
-          <div class="instructions">
+          <div class="pendant-settings" data-section="pendant">
+            <h3>Pendant settings</h3>
+            <div class="input-row">
+              <label class="with-help">
+                <span>
+                  Density difference Δρ (kg/m³)
+                  <span class="help" title="Δρ is the density of the droplet liquid minus the surrounding fluid (typically air). Example: water in air ≈ 1000 kg/m³.">?</span>
+                </span>
+                <input id="densityDiff" type="number" value="1000" step="10" />
+              </label>
+              <label>
+                Scale (mm per px)
+                <input id="scaleMmPerPx" type="number" value="0.010" step="0.001" />
+              </label>
+              <label>
+                Known distance (mm)
+                <input id="knownDistance" type="number" value="1.000" step="0.001" />
+              </label>
+            </div>
+            <div class="input-row">
+              <button id="calibrateScale">Set scale by drawing</button>
+              <div id="calibrationStatus" class="note">
+                Click two points on the image to measure a known distance
+                (e.g., nozzle diameter).
+              </div>
+            </div>
+            <p class="note">
+              Used only for pendant drop mode. Surface tension γ is computed from
+              the fitted capillary constant: γ = Δρ·g / b, where g is
+              gravitational acceleration and b is the capillary constant from
+              the Young–Laplace fit.
+            </p>
+          </div>
+
+          <div class="instructions" data-section="sessile">
             <h3>Quick guide</h3>
             <ol>
               <li>Load a droplet image.</li>
-              <li>Set the baseline with two clicks.</li>
+              <li>
+                Set the baseline with two clicks along the solid surface. These
+                two base points define the substrate plane and separate the
+                droplet (above) from the solid (below), which sets the reference
+                line for all angles.
+              </li>
               <li>
                 Add boundary points (10+ recommended) for circle/ellipse fits.
               </li>
@@ -92,8 +142,35 @@
               <li>Choose analysis mode and compute.</li>
             </ol>
             <div class="note">
-              Manual mode uses the helper points to define a local tangent at each
-              contact point. Circle/ellipse modes fit all boundary points.
+              The baseline is the contact line reference: it defines where the
+              droplet meets the solid and fixes the left/right intersection
+              points for best-fit methods. Manual mode uses the helper points to
+              define a local tangent at each contact point. Circle/ellipse modes
+              fit all boundary points.
+            </div>
+          </div>
+
+          <div class="instructions" data-section="pendant">
+            <h3>Pendant drop SOP</h3>
+            <ol>
+              <li>Load a pendant drop image with the full profile visible.</li>
+              <li>
+                Switch click mode to Boundary points and mark the full profile
+                from apex down both sides (12–30 points recommended).
+              </li>
+              <li>
+                Enter Δρ (density difference) and the scale in mm/px.
+              </li>
+              <li>
+                Choose Pendant drop in the analysis tabs and click compute.
+              </li>
+            </ol>
+            <div class="note">
+              Pendant analysis fits the Young–Laplace profile to the boundary
+              points. The fit returns the capillary constant b and apex radius
+              R0; surface tension is γ = Δρ·g / b.
+              Symbols: Δρ density difference, g gravitational acceleration,
+              b capillary constant, R0 apex radius, γ surface tension.
             </div>
           </div>
         </section>
