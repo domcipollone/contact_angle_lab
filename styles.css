@@ -1,13 +1,15 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Source+Sans+3:wght@400;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap");
 
 :root {
-  --paper: #f6f2e9;
-  --ink: #1d1a16;
-  --muted: #6b6257;
-  --accent: #c97c2d;
-  --accent-dark: #8a4c12;
-  --panel: #fffaf1;
-  --shadow: rgba(31, 25, 17, 0.15);
+  --paper: #0b0f17;
+  --ink: #eaf2ff;
+  --muted: #8aa2c0;
+  --accent: #45d6ff;
+  --accent-dark: #2c7bff;
+  --panel: rgba(14, 20, 32, 0.92);
+  --shadow: rgba(3, 10, 20, 0.7);
+  --glow: rgba(69, 214, 255, 0.35);
+  --violet: #b086ff;
 }
 
 * {
@@ -16,9 +18,13 @@
 
 body {
   margin: 0;
-  font-family: "Source Sans 3", Arial, sans-serif;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
   color: var(--ink);
-  background: radial-gradient(circle at top, #fff7e0 0%, var(--paper) 45%, #efe5d4 100%);
+  background:
+    radial-gradient(circle at 15% 10%, rgba(69, 214, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 80% 20%, rgba(176, 134, 255, 0.22), transparent 42%),
+    radial-gradient(circle at 50% 80%, rgba(36, 255, 198, 0.12), transparent 45%),
+    linear-gradient(180deg, #070a12 0%, #0a1220 50%, #05070c 100%);
 }
 
 .app {
@@ -31,30 +37,49 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  background: linear-gradient(120deg, #fff0d2, #f7e1b8);
+  padding: 20px 28px;
+  background:
+    linear-gradient(130deg, rgba(14, 24, 40, 0.95), rgba(9, 14, 24, 0.9)),
+    repeating-linear-gradient(90deg, rgba(69, 214, 255, 0.08) 0 2px, transparent 2px 8px);
   border-radius: 18px;
-  box-shadow: 0 20px 40px -30px var(--shadow);
+  border: 1px solid rgba(69, 214, 255, 0.4);
+  box-shadow: 0 20px 36px -24px var(--shadow), 0 0 30px var(--glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(69, 214, 255, 0.12), transparent 60%);
+  pointer-events: none;
 }
 
 .hero h1 {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 2.6rem;
+  font-family: "Orbitron", "Space Grotesk", sans-serif;
+  font-size: 2.1rem;
   margin: 0 0 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .subtitle {
   margin: 0;
   color: var(--muted);
+  font-size: 1.05rem;
 }
 
 .badge {
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 999px;
-  background: var(--accent);
-  color: #fffdf7;
+  background: rgba(9, 14, 24, 0.85);
+  color: var(--accent);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(69, 214, 255, 0.6);
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(69, 214, 255, 0.35);
 }
 
 .layout {
@@ -68,7 +93,9 @@ body {
   background: var(--panel);
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 24px 40px -34px var(--shadow);
+  border: 1px solid rgba(69, 214, 255, 0.2);
+  box-shadow: 0 24px 40px -32px var(--shadow);
+  backdrop-filter: blur(10px);
 }
 
 .panel-header {
@@ -82,9 +109,10 @@ body {
 .tab-bar {
   display: flex;
   gap: 8px;
-  background: #efe4d0;
+  background: rgba(10, 18, 30, 0.8);
   padding: 6px;
   border-radius: 999px;
+  border: 1px solid rgba(69, 214, 255, 0.3);
 }
 
 .tab {
@@ -94,16 +122,20 @@ body {
   border-radius: 999px;
   font-weight: 600;
   cursor: pointer;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .tab.active {
-  background: var(--accent-dark);
-  color: #fffdf7;
+  background: linear-gradient(120deg, rgba(69, 214, 255, 0.5), rgba(44, 123, 255, 0.7));
+  color: #07111f;
 }
 
 .panel h2 {
   margin: 0 0 16px;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Orbitron", "Space Grotesk", sans-serif;
+  font-size: 1.2rem;
 }
 
 .toolbar {
@@ -116,19 +148,22 @@ body {
 button,
 .file {
   border: none;
-  background: #efe4d0;
+  background: rgba(12, 20, 34, 0.9);
   color: var(--ink);
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease;
+  border: 1px solid rgba(69, 214, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 button:hover,
 .file:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 16px -12px var(--shadow);
+  box-shadow: 0 12px 20px -14px var(--shadow), 0 0 14px rgba(69, 214, 255, 0.35);
 }
 
 .file input {
@@ -136,8 +171,10 @@ button:hover,
 }
 
 .primary {
-  background: var(--accent);
-  color: #fffdf7;
+  background: linear-gradient(120deg, rgba(69, 214, 255, 0.9), rgba(44, 123, 255, 0.95));
+  color: #06101f;
+  border: 1px solid rgba(69, 214, 255, 0.8);
+  box-shadow: 0 0 18px rgba(69, 214, 255, 0.45);
 }
 
 .tool-row {
@@ -149,6 +186,10 @@ button:hover,
 
 .tool-group h3 {
   margin: 0 0 8px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.9rem;
 }
 
 .tool-buttons {
@@ -159,13 +200,13 @@ button:hover,
 
 .tool,
 .mode {
-  background: #efe4d0;
+  background: rgba(12, 20, 34, 0.9);
 }
 
 .tool.active,
 .mode.active {
-  background: var(--accent-dark);
-  color: #fffdf7;
+  background: rgba(176, 134, 255, 0.75);
+  color: #05070c;
 }
 
 .mode.disabled {
@@ -174,7 +215,7 @@ button:hover,
 }
 
 .analyze {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .hint {
@@ -183,10 +224,12 @@ button:hover,
 }
 
 .canvas-wrap {
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
-  background: #0f0c08;
+  background: #06080c;
   min-height: 320px;
+  border: 1px solid rgba(69, 214, 255, 0.3);
+  box-shadow: inset 0 0 30px rgba(5, 8, 15, 0.85);
 }
 
 canvas {
@@ -201,16 +244,18 @@ canvas {
 }
 
 .metric {
-  background: #fff5e2;
+  background: rgba(12, 20, 34, 0.9);
   border-radius: 14px;
   padding: 14px;
-  box-shadow: inset 0 0 0 1px rgba(184, 143, 92, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(69, 214, 255, 0.2);
 }
 
 .label {
   display: block;
   font-size: 0.85rem;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .value {
@@ -230,9 +275,10 @@ canvas {
 .note {
   margin-top: 12px;
   padding: 12px;
-  background: #fff0d9;
+  background: rgba(10, 16, 28, 0.9);
   border-radius: 12px;
   color: var(--muted);
+  border: 1px solid rgba(69, 214, 255, 0.25);
 }
 
 .pendant-settings {
@@ -278,8 +324,8 @@ label {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #eadbc6;
-  color: #3d2a16;
+  background: rgba(69, 214, 255, 0.15);
+  color: var(--accent);
   font-weight: 700;
   font-size: 0.75rem;
 }
@@ -287,8 +333,8 @@ label {
 input {
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(120, 90, 60, 0.25);
-  background: #fffaf2;
+  border: 1px solid rgba(69, 214, 255, 0.3);
+  background: rgba(9, 14, 24, 0.9);
   font-weight: 600;
   color: var(--ink);
 }
