@@ -18,6 +18,12 @@ const knownDistanceInput = document.getElementById("knownDistance");
 const calibrateButton = document.getElementById("calibrateScale");
 const calibrationStatus = document.getElementById("calibrationStatus");
 const analyzeButton = document.getElementById("analyze");
+const experimentInput = document.getElementById("experimentName");
+const substrateInput = document.getElementById("substrateName");
+const fluidInput = document.getElementById("fluidName");
+const downloadCsvButton = document.getElementById("downloadCsv");
+const clearLogButton = document.getElementById("clearLog");
+const metaLabels = document.querySelectorAll("[data-meta]");
 
 const state = {
   image: null,
@@ -28,6 +34,7 @@ const state = {
   manualPoints: [],
   tool: "baseline",
   mode: "manual",
+  log: [],
   calibration: {
     active: false,
     points: [],
@@ -73,8 +80,10 @@ function setTab(tab) {
   });
   if (tab === "pendant") {
     disableSessileModes(true);
+    toggleMetaFields("pendant");
   } else {
     disableSessileModes(false);
+    toggleMetaFields("sessile");
   }
   if (tab === "pendant") {
     setMode("pendant");
@@ -200,6 +209,7 @@ document.getElementById("analyze").addEventListener("click", () => {
     rightAngleEl.textContent = formatValue(result.right, "deg");
   }
   methodEl.textContent = result.label;
+  recordRun(result);
 });
 
 function fitImage() {
@@ -730,6 +740,107 @@ function disableSessileModes(isPendant) {
   });
 }
 
+function toggleMetaFields(tab) {
+  metaLabels.forEach((label) => {
+    label.classList.toggle("active", label.dataset.meta === tab);
+  });
+}
+
+function recordRun(result) {
+  const now = new Date();
+  const measurementType = state.mode === "pendant" ? "pendant" : "sessile";
+  const entry = {
+    timestamp: now.toISOString(),
+    measurementType,
+    analysisType: result.label,
+    experimentName: experimentInput.value.trim(),
+    substrate: measurementType === "sessile" ? substrateInput.value.trim() : "",
+    fluid: measurementType === "pendant" ? fluidInput.value.trim() : "",
+    leftAngle: measurementType === "sessile" ? result.left : "",
+    rightAngle: measurementType === "sessile" ? result.right : "",
+    surfaceTension: measurementType === "pendant" ? result.left : "",
+    apexRadius: measurementType === "pendant" ? result.right : "",
+    surfaceTensionUnit: measurementType === "pendant" ? result.leftUnit : "",
+    apexRadiusUnit: measurementType === "pendant" ? result.rightUnit : "",
+    densityDifference: measurementType === "pendant" ? densityInput.value : "",
+    scaleMmPerPx: measurementType === "pendant" ? scaleInput.value : "",
+    knownDistanceMm: measurementType === "pendant" ? knownDistanceInput.value : "",
+    baselinePoints: state.baseline.length,
+    boundaryPoints: state.boundaryPoints.length,
+    manualPoints: state.manualPoints.length,
+  };
+  state.log.push(entry);
+}
+
+function buildCsv(rows) {
+  const headers = [
+    "timestamp",
+    "measurement_type",
+    "analysis_type",
+    "experiment_name",
+    "substrate",
+    "fluid",
+    "left_angle",
+    "right_angle",
+    "surface_tension",
+    "apex_radius",
+    "surface_tension_unit",
+    "apex_radius_unit",
+    "density_difference",
+    "scale_mm_per_px",
+    "known_distance_mm",
+    "baseline_points",
+    "boundary_points",
+    "manual_points",
+  ];
+  const lines = [headers.join(",")];
+  rows.forEach((row) => {
+    const values = [
+      row.timestamp,
+      row.measurementType,
+      row.analysisType,
+      row.experimentName,
+      row.substrate,
+      row.fluid,
+      row.leftAngle,
+      row.rightAngle,
+      row.surfaceTension,
+      row.apexRadius,
+      row.surfaceTensionUnit,
+      row.apexRadiusUnit,
+      row.densityDifference,
+      row.scaleMmPerPx,
+      row.knownDistanceMm,
+      row.baselinePoints,
+      row.boundaryPoints,
+      row.manualPoints,
+    ].map(escapeCsv);
+    lines.push(values.join(","));
+  });
+  return lines.join("\n");
+}
+
+function escapeCsv(value) {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  if (/[",\n]/.test(str)) {
+    return `"${str.replace(/"/g, "\"\"")}"`;
+  }
+  return str;
+}
+
+function downloadCsv(csv, filename) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function handleCalibrationPoint(point) {
   state.calibration.points.push(point);
   if (state.calibration.points.length < 2) {
@@ -946,3 +1057,16 @@ updateLabels();
 setTab("sessile");
 
 draw();
+downloadCsvButton.addEventListener("click", () => {
+  if (!state.log.length) {
+    alert("No runs recorded yet.");
+    return;
+  }
+  const csv = buildCsv(state.log);
+  downloadCsv(csv, "surface-lab-runs.csv");
+});
+
+clearLogButton.addEventListener("click", () => {
+  state.log = [];
+  alert("Run log cleared.");
+});
