@@ -27,7 +27,7 @@ Then open `http://localhost:8000` and click `index.html`.
 
 ## 2) Schematic of phase boundaries, baseline, and tangent helpers
 
-![Phase boundaries schematic](./schematic.png)
+![Phase boundaries schematic](./Contact_angle.png)
 
 Legend
 - LC / RC: left / right contact point (three-phase contact line)
