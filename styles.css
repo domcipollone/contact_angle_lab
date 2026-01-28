@@ -71,6 +71,36 @@ body {
   box-shadow: 0 24px 40px -34px var(--shadow);
 }
 
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  background: #efe4d0;
+  padding: 6px;
+  border-radius: 999px;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--accent-dark);
+  color: #fffdf7;
+}
+
 .panel h2 {
   margin: 0 0 16px;
   font-family: "Playfair Display", Georgia, serif;
@@ -138,6 +168,15 @@ button:hover,
   color: #fffdf7;
 }
 
+.mode.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.analyze {
+  margin-top: 16px;
+}
+
 .hint {
   margin: 8px 0 0;
   color: var(--muted);
@@ -200,10 +239,23 @@ canvas {
   margin-top: 20px;
 }
 
+[data-section] {
+  display: none;
+}
+
+[data-section].active {
+  display: block;
+}
+
 .input-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
+}
+
+.input-row .note {
+  margin: 0;
+  align-self: center;
 }
 
 label {
@@ -211,6 +263,25 @@ label {
   gap: 6px;
   font-size: 0.9rem;
   color: var(--muted);
+}
+
+.with-help span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #eadbc6;
+  color: #3d2a16;
+  font-weight: 700;
+  font-size: 0.75rem;
 }
 
 input {

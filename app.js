@@ -3,6 +3,8 @@ const ctx = canvas.getContext("2d");
 const imageInput = document.getElementById("imageInput");
 const toolButtons = document.querySelectorAll(".tool");
 const modeButtons = document.querySelectorAll(".mode");
+const tabs = document.querySelectorAll(".tab");
+const sections = document.querySelectorAll("[data-section]");
 const toolHint = document.getElementById("toolHint");
 const leftAngleEl = document.getElementById("leftAngle");
 const rightAngleEl = document.getElementById("rightAngle");
@@ -12,6 +14,10 @@ const label2 = document.getElementById("label2");
 const label3 = document.getElementById("label3");
 const densityInput = document.getElementById("densityDiff");
 const scaleInput = document.getElementById("scaleMmPerPx");
+const knownDistanceInput = document.getElementById("knownDistance");
+const calibrateButton = document.getElementById("calibrateScale");
+const calibrationStatus = document.getElementById("calibrationStatus");
+const analyzeButton = document.getElementById("analyze");
 
 const state = {
   image: null,
@@ -22,6 +28,10 @@ const state = {
   manualPoints: [],
   tool: "baseline",
   mode: "manual",
+  calibration: {
+    active: false,
+    points: [],
+  },
 };
 
 const hints = {
@@ -54,12 +64,35 @@ function setMode(mode) {
   updateLabels();
 }
 
+function setTab(tab) {
+  tabs.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.tab === tab);
+  });
+  sections.forEach((section) => {
+    section.classList.toggle("active", section.dataset.section === tab);
+  });
+  if (tab === "pendant") {
+    disableSessileModes(true);
+  } else {
+    disableSessileModes(false);
+  }
+  if (tab === "pendant") {
+    setMode("pendant");
+  } else {
+    setMode("manual");
+  }
+}
+
 toolButtons.forEach((btn) => {
   btn.addEventListener("click", () => setTool(btn.dataset.tool));
 });
 
 modeButtons.forEach((btn) => {
   btn.addEventListener("click", () => setMode(btn.dataset.mode));
+});
+
+tabs.forEach((btn) => {
+  btn.addEventListener("click", () => setTab(btn.dataset.tab));
 });
 
 document.getElementById("clearPoints").addEventListener("click", () => {
@@ -93,6 +126,11 @@ canvas.addEventListener("click", (event) => {
   const y = (event.clientY - rect.top) * (canvas.height / rect.height);
   const point = { x, y };
 
+  if (state.calibration.active) {
+    handleCalibrationPoint(point);
+    return;
+  }
+
   if (state.tool === "baseline") {
     if (state.baseline.length >= 2) state.baseline = [];
     state.baseline.push(point);
@@ -104,6 +142,12 @@ canvas.addEventListener("click", (event) => {
   }
 
   draw();
+});
+
+calibrateButton.addEventListener("click", () => {
+  state.calibration.active = true;
+  state.calibration.points = [];
+  updateCalibrationStatus("Click two points to define the known distance.");
 });
 
 document.getElementById("analyze").addEventListener("click", () => {
@@ -188,6 +232,7 @@ function draw() {
 
   drawPoints(state.boundaryPoints, "#55b3f3");
   drawPoints(state.manualPoints, "#f05d5e");
+  drawPoints(state.calibration.points, "#ff6f3d");
 
   if (
     state.boundaryPoints.length > 2 &&
@@ -659,11 +704,60 @@ function updateLabels() {
     label1.textContent = "Surface tension";
     label2.textContent = "Apex radius";
     label3.textContent = "Method";
+    analyzeButton.textContent = "Compute surface tension";
   } else {
     label1.textContent = "Left angle";
     label2.textContent = "Right angle";
     label3.textContent = "Method";
+    analyzeButton.textContent = "Compute contact angle";
   }
+}
+
+function disableSessileModes(isPendant) {
+  modeButtons.forEach((btn) => {
+    const isSessileOnly =
+      btn.dataset.mode === "manual" ||
+      btn.dataset.mode === "circle" ||
+      btn.dataset.mode === "ellipse" ||
+      btn.dataset.mode === "both";
+    if (isPendant && isSessileOnly) {
+      btn.classList.add("disabled");
+      btn.disabled = true;
+    } else {
+      btn.classList.remove("disabled");
+      btn.disabled = false;
+    }
+  });
+}
+
+function handleCalibrationPoint(point) {
+  state.calibration.points.push(point);
+  if (state.calibration.points.length < 2) {
+    updateCalibrationStatus("Select the second point to finish the measurement.");
+    draw();
+    return;
+  }
+  const [p1, p2] = state.calibration.points;
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const pxDistance = Math.hypot(dx, dy);
+  const knownDistance = Number(knownDistanceInput.value) || 0;
+  if (pxDistance > 0 && knownDistance > 0) {
+    const mmPerPx = knownDistance / pxDistance;
+    scaleInput.value = mmPerPx.toFixed(6);
+    updateCalibrationStatus(
+      `Scale set: ${mmPerPx.toFixed(6)} mm/px from ${knownDistance} mm.`
+    );
+  } else {
+    updateCalibrationStatus("Invalid distance. Enter a known distance in mm.");
+  }
+  state.calibration.active = false;
+  state.calibration.points = [];
+  draw();
+}
+
+function updateCalibrationStatus(message) {
+  calibrationStatus.textContent = message;
 }
 
 function formatValue(value, unit) {
@@ -849,5 +943,6 @@ function interpolateR(profile, z) {
 }
 
 updateLabels();
+setTab("sessile");
 
 draw();
