@@ -51,8 +51,9 @@ tangent at each contact point for manual measurements.
   helper, right tangent helper.
 - The local tangent at each contact point is defined by the vector from the
   contact point to its helper point.
-- The contact angle is computed as the counter-clockwise angle from the
-  baseline vector to the tangent vector, constrained to 0-180 degrees.
+- The contact angle is computed as the angle between the solid-liquid vector
+  (baseline along the substrate) and the liquid-vapor vector (local tangent at
+  the contact line), constrained to 0-180 degrees.
 
 **Technical background**
 This method approximates the local interface slope at the contact line using a
@@ -74,7 +75,8 @@ contact line.
 - Intersect the fitted circle with the baseline to locate left/right contact
   points.
 - The tangent at each contact point is perpendicular to the radius.
-- The contact angle is computed from baseline to tangent (0-180 degrees).
+- The contact angle is computed between the solid-liquid vector (baseline) and
+  the liquid-vapor tangent (0-180 degrees).
 
 **Technical background**
 For small droplets dominated by surface tension, the profile can often be
@@ -96,7 +98,8 @@ entire perimeter is important.
   points.
 - Compute the local tangent using the ellipse's conic gradient at each contact
   point.
-- The contact angle is computed from baseline to tangent (0-180 degrees).
+- The contact angle is computed between the solid-liquid vector (baseline) and
+  the liquid-vapor tangent (0-180 degrees).
 
 **Technical background**
 Elliptical fits capture asymmetric or gravitationally deformed droplets better
