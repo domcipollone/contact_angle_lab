@@ -29,6 +29,8 @@ Then open `http://localhost:8000` and click `index.html`.
 
 ![Phase boundaries schematic](./Contact_angle.png)
 
+[image source: https://en.wikipedia.org/wiki/Contact_angle]
+
 Legend
 - LC / RC: left / right contact point (three-phase contact line)
 - baseline: substrate plane; separates solid (below) from liquid + vapor (above)
